@@ -9,9 +9,11 @@ import {
   Platform,
   StyleSheet,
   Text,
-  View
+  View,
+  NavigatorIOS
 } from 'react-native';
 import ShotList from './app/ShotList';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' +
@@ -21,30 +23,64 @@ const instructions = Platform.select({
 });
 
 export default class App extends Component<{}> {
-  render() {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedTab: 'default'
+    };
+  }
+  _renderContent(category, title) {
     return (
-      <View style={styles.container}>
-        <ShotList filter="debuts" />
-      </View>
+      <NavigatorIOS
+        style={styles.wrapper}
+        initialRoute={{
+          component: ShotList,
+          title,
+          passProps: { filter: category }
+        }}                
+      />
     );
   }
+
+  
+
+  // render() {
+  //   return (
+  //     <View style={styles.container}>
+  //       <ShotList filter="debuts" />
+  //     </View>
+  //   );
+  // }
 }
 
-const styles = StyleSheet.create({
-  container: {
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     backgroundColor: '#F5FCFF',
+//   },
+//   welcome: {
+//     fontSize: 20,
+//     textAlign: 'center',
+//     margin: 10,
+//   },
+//   instructions: {
+//     textAlign: 'center',
+//     color: '#333333',
+//     marginBottom: 5,
+//   },
+// });
+
+var styles = StyleSheet.create({
+  tabContent: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
+    alignItems: "center",
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  tabText: {
+    color: "white",
+    margin: 50,
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-});
+  wrapper: {
+    flex: 1
+  }

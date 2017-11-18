@@ -2,7 +2,7 @@
 
 import React, { Component } from 'react';
 import { 
-    ActivityIndicatorIOS,
+    ActivityIndicator,
     ListView,
     StyleSheet,
     Text,
@@ -12,9 +12,10 @@ import {
     TextInput
  } from 'react-native';
 import api from './helpers/api';
-// import ShotCell from './ShotCell';
+import ShotCell from './ShotCell';
+import Loading from './Loading';
+
 // import ShotDetails from './ShotDetails';
-// import Loading from './Loading';
 
 const resultCache = {
     dataFromQuery: [],
@@ -25,6 +26,10 @@ const resultCache = {
 const LOADING = {};
 
 class ShotList extends Component {
+
+    static get defaultProps() {
+        return { filter: '' };
+    }
     constructor(props) {
         super(props);
         this.state = {
@@ -36,10 +41,50 @@ class ShotList extends Component {
         };
         this.getShots = this.getShots.bind(this);
         this.renderItem = this.renderItem.bind(this);
+        this.onEndReached = this.onEndReached.bind(this);
+        // this.renderFooter = this.renderFooter.bind(this);
     }
 
     componentWillMount() {
         this.getShots(this.state.filter);
+    } 
+
+    onEndReached() {
+        const query = this.state.filter;
+        if (!this.hasMore() || this.state.isLoadingTail) {
+            return;
+        }
+        if (LOADING[query]) {
+            return;
+        }
+        LOADING[query] = true;
+        this.setState({
+            queryNumber: this.state.queryNumber + 1,
+            isLoadingTail: true,
+        });
+
+        const page = resultCache.nextPageNumberForQuery[query];
+        api.getShotsByType(query, page)
+            .catch((err) => {
+                LOADING[query] = false;
+                this.setState({ isLoadingTail: false });
+            })
+            .then(responseData => {
+                let shotsForQuery = resultCache.dataFromQuery[query].slice();
+
+                LOADING[query] = false;
+                if (!responseData) {
+                    resultCache.totalForQuery[query] = shotsForQuery.length;
+                } else {
+                    shotsForQuery = [...shotsForQuery, ...responseData];
+                    resultCache.dataFromQuery[query] = shotsForQuery;
+                    resultCache.nextPageNumberForQuery[query] += 1;  
+                }
+               this.setState({
+                    dataSource: shotsForQuery,
+                    isLoadingTail: false
+               });
+            });
     }
 
     getShots(query) {
@@ -85,26 +130,57 @@ class ShotList extends Component {
        .done();   
     }
 
-    renderItem({ item, index }) {
+    hasMore() :boolean {
+        const query = this.state.filter;
+        if (!resultCache.dataFromQuery[query]) {
+            return true;
+        }
         return (
-            <View>
-                <Text>{item.title}</Text>
-                <View>
-                <Image
-                source={{ uri: item.images.normal }}
-                style={styles.cellImage}
-                accessible
-                />
-                </View>
-            </View>);
+            resultCache.totalForQuery[query] !== resultCache.dataFromQuery[query].length
+        );
+    }
+    
+
+    selectShot(shot) {
+        this.props.navigator.push({
+            component: ShotDetails,
+            passProps: {shot},
+            title: shot.title
+        })
+    }
+
+    renderFooter() {
+        return (
+            <View style={styles.scrollSpinner}>
+                <Loading isLoading={this.state.isLoading || this.state.isLoadingTail} />
+            </View>
+        );
+    }
+
+    renderItem({ item, index }) {
+        return (<ShotCell onSelect={() => this.selectShot(item)} shot={item} key={index} />);
     }
 
     render() {
-        const content = () => (<FlatList data={this.state.dataSource} renderItem={this.renderItem} />);
+        let content;
+        if (this.state.dataSource.length == 0) {
+              content = <Loading isLoading={this.state.isLoading || this.state.isLoadingTail} />; 
+        } else {
+            content = (<FlatList 
+                    data={this.state.dataSource} 
+                    ListFooterComponent={this.renderFooter()}
+                    renderItem={this.renderItem} 
+                    onEndReached={this.onEndReached}
+                    keyExtractor={(item, index) => index}
+                    keyboardDismissMode='on-drag'
+                    keyboardShouldPersistTaps='always'
+                    showsVerticalScrollIndicator={false}
+            />);
+            }
         return (
             <View style={styles.container}>
                 <View style={styles.separator} />
-                {content()}
+                {content}
             </View>
         );
     }
@@ -114,20 +190,14 @@ class ShotList extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: 'white',
         flexDirection: 'column',
         justifyContent: 'center'
     },
     separator: {
         height: 1,
-        backgroundColor: '#eee',
+        backgroundColor: '#eeeeee',
     },
-    cellImage: {
-        height: 300,
-        width: 300,
-        backgroundColor: 'transparent',
-        resizeMode: 'cover'
-      },
     scrollSpinner: {
         marginVertical: 20,
     }
