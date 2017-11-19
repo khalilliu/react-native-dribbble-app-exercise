@@ -37,28 +37,57 @@ class CommentItem extends Component{
                     onPress={this.props.onSelect.bind(this,this.props.comment)}
                     underlayColor={'#f3f3f3'}
                 >
-                    <View>
+                <View>
+                    <View style={styles.commentContent}>
                         <Image 
                             source={getImage.authorAvatar(this.props.comment.user)}
+                            style = {styles.avatar}
                         />
-                        <View >
-                            <Text>{this.props.comment.user.name}</Text>
-                            <View>
+                        <View style={styles.commentBody}>
+                            <Text style={styles.userName}>
+                                {this.props.comment.user.name}
+                            </Text>
+                            <View style={styles.commentText}>
                                 <HTML value={this.props.comment.body} />
                             </View>
                         </View>
-                        <View style={ styles.cellBorder} />
                     </View>
+                    <View style={ styles.cellBorder} />
+                </View>
                 </TouchableHighlight>
             </View>
         )}
 }
 
 const styles = StyleSheet.create({
+    commentContent: {
+        padding: 10,
+        flex:1 ,
+        flexDirection: 'row',
+        alignItems: 'flex-start'
+    },
+    commentBody:{
+        flex:1,
+        flexDirection: 'column',
+        justifyContent: 'center'
+    },
+    commentText:{
+        flex:1,
+        flexDirection: 'row',
+    },
+    userName:{
+        fontWeight: '700',
+    },
     cellBorder:{
         backgroundColor: 'rgba(0,0,0,0.2)',
         height: 1 / PixelRatio.get(),
         marginLeft: 4,
+    },
+    avatar:{
+        borderRadius: 20,
+        width:40,
+        height:40,
+        marginRight: 10,
     }
 })
 

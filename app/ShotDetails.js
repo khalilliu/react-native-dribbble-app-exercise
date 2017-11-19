@@ -25,6 +25,7 @@ import api from './helpers/api';
 import getImage from './helpers/getImage'; 
 import Loading from './Loading';
 import CommentItem from './CommentItem';
+import Player from './Player';
 
 const screen = Dimensions.get('window');
 
@@ -36,8 +37,8 @@ class ShotDetails extends Component {
             isLoading: false,
             dataSource: []
         };
-        
-      
+        this.openModal = this.openModal.bind(this);
+        this.closeModal = this.closeModal.bind(this);
     }
    
     componentDidMount() {
@@ -56,7 +57,11 @@ class ShotDetails extends Component {
         this.setState({ isModalOpen: false });
     }
     selectPlayer(player) {
-
+      this.props.navigator.push({
+        component: Player,
+        passProps: { player },
+        title: Player.name,
+      });
     }
 
     renderCommentList() {
@@ -73,9 +78,9 @@ class ShotDetails extends Component {
               <FlatList 
                 data={this.state.dataSource} 
                 renderItem={
-                    ({item,index}) => <CommentItem comment={item} onSelect={()=> this.selectPlayer(item.user)}></CommentItem>
+                    ({ item, index }) => <CommentItem comment={item} onSelect={() => this.selectPlayer(item.user)} />
                   } 
-                keyExtractor={(item,index)=> index}
+                keyExtractor={(item, index) => index}
               />            
             </View>
         </View>);
@@ -83,6 +88,32 @@ class ShotDetails extends Component {
       return content;
     }
 
+    _showModalTransition(transition) {
+      transition('opacity', {
+        duration: 200,
+        begin: 0,
+        end: 1
+      });
+      transition('height', {
+        duration: 200,
+        begin: -screen.height + 2,
+        end: screen.height
+      });
+    }
+
+    _hideModalTransition(transition) {
+      transition('height', {
+        duration: 200,
+        begin: screen.height,
+        end: screen.height * 2,
+        reset: true
+      });
+      transition('opacity', {
+        duration: 200,
+        begin: 1,
+        end: 0
+      });
+    }
     // _renderItem({ comment, index }) {
     //   return (<CommentItem onSelect={() => this.selectPlayer(comment.user)} comment={comment} key={index} />);
     // }
@@ -94,10 +125,10 @@ class ShotDetails extends Component {
                 backgroundSource={getImage.shotImage(this.props.shot)}
                 windowHeight={300}
                 header={(
-                <TouchableOpacity onPress={this.openModal}>
+                  <TouchableHighlight onPress={() => this.openModal()}>
                     <View style={styles.invisibleView} />
-                </TouchableOpacity>
-            )}
+                  </TouchableHighlight>
+                  )}
             >
             <View>
                 <TouchableHighlight
@@ -142,12 +173,25 @@ source={getImage.authorAvatar(player)}
                     </View>
                 </View>
             </View>
-            <Modal visible={this.state.isModalOpen}>
-              <Image  
-                source={getImage.hdImage(this.props.shot)} 
-                style={styles.customModalImage} 
-                resizeMode="contain"
-              />
+            <Modal 
+              visible={this.state.isModalOpen}
+              animationType={'fade'}
+              transparent={false}
+            >
+              <TouchableHighlight
+                onPress={() => {
+                this.closeModal(); 
+              }}
+              >
+                <View>
+                  <View style={styles.modalBg} />
+                  <Image  
+                  source={getImage.shotImage(this.props.shot)} 
+                  style={styles.customModalImage} 
+                  resizeMode="contain"
+                  />
+                </View>
+              </TouchableHighlight>
             </Modal>
         </ParallaxView>
         );
@@ -175,10 +219,13 @@ const styles = StyleSheet.create({
       top: 0,
       left: 0,
       bottom: 0,
-      right: 0
+      right: 0,
+      height: 300,
+      width: screen.width,
     },
     customModalImage: {
-      height: screen.height / 2
+      height: screen.height / 2,
+      top: screen.height / 4
     },
     headerContent: {
       flex: 1,
@@ -251,6 +298,13 @@ const styles = StyleSheet.create({
     heading: {
       fontWeight: '700',
       fontSize: 16
+    },
+    modalBg: {
+      flex: 1,
+      height: screen.height,
+      width: screen.width,
+      position: 'absolute',
+      backgroundColor: 'rgba(0,0,0,0.8)',
     }
   });
 
