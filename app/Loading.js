@@ -18,7 +18,7 @@ var Loading = (props) => (
         </View>
         );
 
-var  styles = StyleSheet.create({
+var styles = StyleSheet.create({
     container: {
         flex: 1,
         width:width,

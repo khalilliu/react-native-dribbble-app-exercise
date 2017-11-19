@@ -34,7 +34,7 @@ class ShotCell extends Component {
                         <Image
                             source={getImage.shotImage(this.props.shot)}
                             style={styles.cellImage}
-                            accessible   
+                            accessible={true}  
                         />
                     </View>
                 </TouchableHighlight>

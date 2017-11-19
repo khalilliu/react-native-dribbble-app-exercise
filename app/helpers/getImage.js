@@ -8,6 +8,13 @@ const getImage = {
         return { uri };
     },
 
+    hdImage(shot: Object): {uri: ?string} {
+        var uri = shot.images.hidpi
+                   ? shot.images.hidpi
+                   : shot.images.normal;
+        return { uri };
+    },
+
     authorAvatar(player: Object): {uri: ?string}{
         var uri;
         if(player){

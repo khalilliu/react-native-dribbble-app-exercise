@@ -14,8 +14,7 @@ import {
 import api from './helpers/api';
 import ShotCell from './ShotCell';
 import Loading from './Loading';
-
-// import ShotDetails from './ShotDetails';
+import ShotDetails from './ShotDetails';
 
 const resultCache = {
     dataFromQuery: [],
@@ -26,9 +25,10 @@ const resultCache = {
 const LOADING = {};
 
 class ShotList extends Component {
-
-    static get defaultProps() {
-        return { filter: '' };
+    static get defaultProps(){
+        return({
+            filter: ''
+        })
     }
     constructor(props) {
         super(props);
@@ -36,13 +36,14 @@ class ShotList extends Component {
             isLoading: false,
             isLoadingTail: false,
             dataSource: [],
-            filter: this.props.filter,
+            filter: this.props.filter || 'default',
             queryNumber: 0
         };
         this.getShots = this.getShots.bind(this);
         this.renderItem = this.renderItem.bind(this);
         this.onEndReached = this.onEndReached.bind(this);
-        // this.renderFooter = this.renderFooter.bind(this);
+        this.renderFooter = this.renderFooter.bind(this);
+        this.onSelect = this.selectShot.bind(this);
     }
 
     componentWillMount() {
@@ -130,7 +131,7 @@ class ShotList extends Component {
        .done();   
     }
 
-    hasMore() :boolean {
+    hasMore(){
         const query = this.state.filter;
         if (!resultCache.dataFromQuery[query]) {
             return true;
@@ -146,7 +147,7 @@ class ShotList extends Component {
             component: ShotDetails,
             passProps: {shot},
             title: shot.title
-        })
+        });
     }
 
     renderFooter() {
